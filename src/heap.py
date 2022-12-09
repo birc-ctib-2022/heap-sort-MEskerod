@@ -67,6 +67,10 @@ def select_min(a: Ord, b: Ord) -> Order:
     """Pick the smallest element."""
     return Order.First if a < b else Order.Second
 
+def select_max(a: Ord, b: Ord) -> Order: 
+    """Pick the largest element."""
+    return Order.First if a > b else Order.Second
+
 # == Generic heap =========================================
 # Min and Max heaps look very much alike, so we don't want
 # to have duplicated code for them. We abstract away the
@@ -95,11 +99,11 @@ class Heap(Generic[Ord]):
         # FIXME:
         # You can change this if you want the actual list to be
         # longer than the part you consider a heap.
-        return len(self.x)
+        return self.length
 
     def __bool__(self) -> int:
         """Return true if there are more elements in the heap."""
-        return len(self) > 0
+        return self.length > 0 #Heap is True while length is > 0
 
     def __init__(self, x: list[Ord], select: Selector):
         """
@@ -110,6 +114,7 @@ class Heap(Generic[Ord]):
         """
         self.x = x
         self._select = select
+        self.length = len(self.x) #Adds a varible that is the length, which we are able to update
         self._heapify()
 
     def _heapify(self) -> None:
@@ -143,11 +148,11 @@ class Heap(Generic[Ord]):
             i = child
 
     def pop(self) -> Ord:
-        """Remove the smallest value and return it."""
+        """Remove the smallest/largest value and return it."""
         val = self.x[0]
         self.x[0], self.x[len(self)-1] = self.x[len(self)-1], self.x[0]
-        self.x.pop()  # FIXME: Changes the list; maybe you don't want this
-        self._fix_down(0)
+        self.length -= 1  #We move the smallest/largest value to the end of the list.
+        self._fix_down(0) # We don't remove the element, but says that the list is an element is one shorter, so we never update the end
         return val
 
     # Static methods for picking min or max heap
@@ -155,6 +160,11 @@ class Heap(Generic[Ord]):
     def min_heap(x: list[Ord]) -> Heap[Ord]:
         """Create a min-heap."""
         return Heap(x, select_min)
+    
+    @staticmethod
+    def max_heap(x: list[Ord]) -> Heap[Ord]: 
+        """Create a max-heap."""
+        return Heap(x, select_max)
 
 
 def min_heap_sort(x: list[Ord]) -> list[Ord]:
@@ -170,7 +180,6 @@ def min_heap_sort(x: list[Ord]) -> list[Ord]:
         y.append(heap.pop())
     return y
 
-
 def max_heap_sort(x: list[Ord]) -> list[Ord]:
     """
     Sort x and return the sorted values.
@@ -182,3 +191,17 @@ def max_heap_sort(x: list[Ord]) -> list[Ord]:
     while heap:
         heap.pop()
     return x
+
+def max_heap_sort2(x: list[Ord]) -> list[Ord]:
+    """
+    Sort x and return the sorted values.
+
+    >>> max_heap_sort2([1, 4, 2, 3, 5])
+    [1, 2, 3, 4, 5]
+    """
+    heap = Heap.max_heap(x)
+    y = []
+    while heap:
+        y.append(heap.pop())
+    y.reverse()
+    return y
